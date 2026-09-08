@@ -130,8 +130,8 @@ td.mc.empty{color:var(--muted);text-align:center}
 video.rv{max-width:100%;height:auto;border-radius:10px;margin-top:6px;background:#000;display:block}
 /* divergence rows */
 .divrow{display:block;border-bottom:1px dashed var(--line);padding:2px 0}
-.divrow summary{cursor:pointer;padding:8px 0;display:grid;grid-template-areas:"chip lbl right";
-  grid-template-columns:auto minmax(0,1fr) auto;column-gap:13px;row-gap:5px;align-items:center;list-style:none}
+.divrow summary{cursor:pointer;padding:7px 0 9px;display:grid;grid-template-areas:"chip lbl right"
+  "bars bars bars";grid-template-columns:auto minmax(0,1fr) auto;column-gap:13px;row-gap:3px;align-items:center;list-style:none}
 .divrow summary::-webkit-details-marker{display:none}
 .divrow summary .gchip{grid-area:chip}
 .divrow summary .lbl{grid-area:lbl;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}
@@ -140,13 +140,22 @@ video.rv{max-width:100%;height:auto;border-radius:10px;margin-top:6px;background
 .dv.ok{color:var(--good);border:1px solid var(--good);background:color-mix(in srgb,var(--good) 10%,transparent)}
 .dv.ko{color:var(--bad);border:1px solid var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
 .agree-y{color:var(--good);font-weight:700} .agree-n{color:var(--bad);font-weight:700}
+/* 红蓝双道条：上=人类分(蓝) 下=AI分(红)，同为 0-100 */
+.divrow summary .bars{grid-area:bars;display:grid;gap:2px;min-width:0}
+.divrow summary .bars .lane{display:grid;grid-template-columns:9px auto minmax(0,1fr);align-items:center;column-gap:7px;min-width:0}
+.divrow summary .bars .sw{width:8px;height:8px;border-radius:2px;justify-self:center}
+.divrow summary .bars .tg{font-size:11px;color:var(--ink2);font-family:ui-monospace,Consolas,monospace;line-height:1}
+.divrow summary .bars .trk{height:5px;border-radius:99px;background:color-mix(in srgb,var(--ink) 8%,transparent);overflow:hidden}
+.divrow summary .bars .trk b{display:block;height:100%;border-radius:99px}
+.divrow summary .bars .lane.h .sw,.divrow summary .bars .lane.h .trk b{background:var(--blue)}
+.divrow summary .bars .lane.a .sw,.divrow summary .bars .lane.a .trk b{background:var(--bad)}
 .divrow .meta{color:var(--ink2);font-size:12px;padding:2px 0 5px;white-space:normal}
 .divrow details.r{margin-top:3px;border-top:1px dashed var(--line);padding-top:7px}
 details.r{font-size:12.5px;color:var(--ink2)}
 details.r summary{cursor:pointer;color:var(--blue);font-size:12px;padding:2px 0}
 .rtext{max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 11px;margin:5px 0 2px;white-space:pre-wrap}
 @media(max-width:760px){
-.divrow summary{grid-template-areas:"chip lbl" "right right";grid-template-columns:auto minmax(0,1fr)}
+.divrow summary{grid-template-areas:"chip lbl" "right right" "bars bars";grid-template-columns:auto minmax(0,1fr)}
 .divrow summary .right{justify-self:start}
 }
 .more{display:block;margin:14px auto;border:1px solid var(--line);background:var(--card);color:var(--ink2);
@@ -268,8 +277,9 @@ physical 与其余维 0.53–0.61，最独立。</p></div>
 <section id="divergence"><div class="wrap">
 <h2><span class="sec">07</span>人类–AI 分歧发掘 <span class="dimkey">每条 = 一个视频槽，按该臂总分指标 |Δ| 降序 · 点击展开</span></h2>
 <p class="lead">对全部 312 个有分视频槽，用该臂总分指标（单轮 proxy / 多轮 overall / S0-A1 overall）看同一条视频
-“人类给多少、AI 给多少”（0–100%）。行默认折叠，点开看 AI 的 rationale_zh；红=差得多。分歧本身不都是 AI 错——
-也可能是它发现了人类漏看的失败，见逐条展开。</p>
+“人类给多少、AI 给多少”（0–100%）。行内双道条：上<b style="color:var(--blue)">蓝=人类分</b>、下<b style="color:var(--bad)">红=AI 分</b>
+（同 0–100 刻度，两段条长差一眼即人机差距）；右端绿框=一致、红框=差异。行默认折叠，点开看 AI 的 rationale_zh。
+分歧本身不都是 AI 错——也可能是它发现了人类漏看的失败，见逐条展开。</p>
 <div class="filters">
 <div class="armTabs" data-group="div">
 <button class="pill on" data-arm="all">全部臂</button>
@@ -366,9 +376,14 @@ function renderDiv(){
   var html=[];
   for(var i=0;i<seg.length;i++){var d=seg[i];
     var r=d.rationaleZh||'';
+    var hp=Math.round(d.human*100),ap=Math.round(d.ai*100);
     html.push('<details class="divrow"><summary><span class="gchip" style="--c:'+gcolor(d.generator)+'">'+escX(d.generator)+'</span>'
       +'<span class="lbl mono" title="'+escX(d.video_id)+'">'+escX(d.video_id)+'</span>'
-      +'<span class="right">'+diffCell(d)+'</span></summary>'
+      +'<span class="right">'+diffCell(d)+'</span>'
+      +'<div class="bars">'
+      +'<div class="lane h"><span class="sw"></span><span class="tg">人</span><span class="trk"><b style="width:'+hp+'%"></b></span></div>'
+      +'<div class="lane a"><span class="sw"></span><span class="tg">AI</span><span class="trk"><b style="width:'+ap+'%"></b></span></div>'
+      +'</div></summary>'
       +'<div class="meta">任务 '+escX(d.task_id)+' · '+armZh(d.arm)+' · 指标 '+escX(d.metric)
       +(d.cohort?' · '+escX(d.cohort):'')+'</div>'
       +(r?'<details class="r"><summary>AI rationale_zh（为何这样判）</summary><div class="rtext">'+escX(r)+'</div></details>':'')
