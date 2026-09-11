@@ -399,6 +399,19 @@ footer{margin:64px 0 80px;padding-top:22px;border-top:1px solid var(--line);colo
 .partband.one{background:transparent;border-top:0;padding:34px 0 0;margin-top:14px}
 .partband.one .pb-h{font-size:24px}
 @media(max-width:760px){.partband .pb-h{font-size:23px}}
+/* 第二部分开头的数据集卡片：沿用第一卷的 .hstat 组件，只调间距与底 */
+.dsband{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+.dsband .ds-k{font-size:11.5px;font-weight:700;letter-spacing:.18em;color:var(--muted);
+  text-transform:uppercase}
+.dsband .ds-h{font-family:var(--serif);font-size:20px;font-weight:700;letter-spacing:-.01em;
+  margin:6px 0 8px;color:var(--ink)}
+.dsband .ds-p{color:var(--ink2);margin:0;max-width:1010px;font-size:14px;line-height:1.7}
+.dsband .hstats{margin-top:18px;gap:12px}
+.dsband .hstat{background:var(--card);padding:16px 14px;text-align:left}
+.dsband .hstat .hn{font-size:29px}
+/* 这一组的明细行比第一卷多（情绪类别 9 行），240px 会截断，只在本组放宽 */
+.dsband .hstat:hover .hd,.dsband .hstat:focus-within .hd{max-height:520px}
+@media(max-width:560px){.dsband .ds-h{font-size:17px}}
 </style></head><body>
 <div class="topbanner"><b>2026-09-09 终版</b> · 16 位有分评测人的槽均值口径 · 176 个评测任务 / 312 个视频槽 · 抽样 seed 20260902</div><div class="topbar"><div class="wrap"><div class="nav">
 <div class="navgrp"><span class="glab">一 · 人机一致性</span>
@@ -756,7 +769,7 @@ AI 这一格反而掉得最狠（0.54 → +0.19），说明「互动带着社会
 数据来源：<span class="mono">rate.json</span>（导出 2026-09-09T12:59:17+00:00 · seed 20260902）+
 <span class="mono">_rate_scratch/stats_final.json</span>（总览）+ <span class="mono">report_final.json</span>（分析）+ <span class="mono">mc_final.json</span>（§08）。</div>
 </div></section>
-<section class="partband"><div class="wrap"><div class="pb-k">PART TWO</div><h2 class="pb-h">第二部分 · 只看 AI 评分</h2><p class="pb-p">以下五节<b>不含任何人类数据</b>。分母是社交视频语料里<b>全部带完整 AI 评分的视频</b>（单轮 948 条 · S0-A1 350 条 · 多轮 144 条），问题也换成了：把 AI 当唯一裁判，它怎么给这七家模型排名、怎么描述它们的能力、怎么看设定与轮次、它自己那四个维度彼此有多像，以及<b>这批模型反复栽在哪些地方</b>。<br>第一部分回答「AI 判得准不准」，这一部分回答「AI 判成了什么样」——两部分的数字<b>不可互相印证</b>，因为这里没有人类参与。</p><div class="pb-links"><a href="#ai-rank">12 模型排名</a><a href="#ai-prof">13 能力画像</a><a href="#ai-arm">14 设定与多轮</a><a href="#ai-corr">15 维度相关性</a><a href="#ai-fail">16 模型通病</a></div></div></section><section id="ai-rank"><div class="wrap">
+<section class="partband"><div class="wrap"><div class="pb-k">PART TWO</div><h2 class="pb-h">第二部分 · 只看 AI 评分</h2><p class="pb-p">以下五节<b>不含任何人类数据</b>。分母是社交视频语料里<b>全部带完整 AI 评分的视频</b>（单轮 948 条 · S0-A1 350 条 · 多轮 144 条），问题也换成了：把 AI 当唯一裁判，它怎么给这七家模型排名、怎么描述它们的能力、怎么看设定与轮次、它自己那四个维度彼此有多像，以及<b>这批模型反复栽在哪些地方</b>。<br>第一部分回答「AI 判得准不准」，这一部分回答「AI 判成了什么样」——两部分的数字<b>不可互相印证</b>，因为这里没有人类参与。</p><div class="pb-links"><a href="#ai-rank">12 模型排名</a><a href="#ai-prof">13 能力画像</a><a href="#ai-arm">14 设定与多轮</a><a href="#ai-corr">15 维度相关性</a><a href="#ai-fail">16 模型通病</a></div><div class='dsband'><div class='ds-k'>DATASET</div><div class='ds-h'>336 个源场景 · 452 条提示词 · 1,442 条视频 · 7 家模型</div><p class='ds-p'>下面五节用的全部素材。三个臂各自抽样、共用同一批源场景；每条提示词都由多家模型各生成一次。</p><div class='hstats'><div class='hstat' tabindex='0'><div class='hl'>📌 测试提示词</div><div class='hn'>452<span class='u'>条</span></div><div class='hd'><span>单轮 S0-A1-S1<b>378 条</b></span><span>S0-A1 首轮<b>50 条</b></span><span>多轮续接（两轮）<b>24 条</b></span><span>源场景（三臂共用）<b>336 个</b></span><span class='sub'>一条提示词 = 一组 S0→A1→S1 的目标文本。同一条被多家模型各做一次，所以视频远多于提示词；三臂共用这 336 个源场景，但提示词各自重写。</span></div></div><div class='hstat' tabindex='0'><div class='hl'>🎬 评测视频</div><div class='hn'>1,442<span class='u'>条</span></div><div class='hd'><span>单轮 / 首轮 / 多轮<b>948 / 350 / 144 条</b></span><span>单人 / 双人 / 多人<b>595 / 352 / 351 条</b></span><span>（多轮臂未标人数）<b>144 条</b></span><span>最多的一家<b>可灵 435 条</b></span><span>最少的一家<b>Vidu 73 条</b></span><span class='sub'>每家题量差很多（73–435 条），所以后文既报分也报名次——题少的家更容易被单条带跑。</span></div></div><div class='hstat' tabindex='0'><div class='hl'>🏷️ 情绪类别</div><div class='hn'>9<span class='u'>类</span></div><div class='hd'><span>Joy<b>58 条</b></span><span>Anticipation<b>48 条</b></span><span>Neutral<b>49 条</b></span><span>Anger<b>40 条</b></span><span>Self-Conscious<b>39 条</b></span><span>Aversion<b>37 条</b></span><span>Affiliation<b>34 条</b></span><span>Loss<b>37 条</b></span><span>Fear<b>31 条</b></span><span class='sub'>取自每条提示词的开场状态（S0）。另有 MIXED / UNCLEAR 两个兜底标签，不计入这 9 类。</span></div></div><div class='hstat' tabindex='0'><div class='hl'>🧑 参赛模型</div><div class='hn'>7<span class='u'>家</span></div><div class='hd'><span>可灵<b>435 条</b></span><span>Seedance<b>434 条</b></span><span>混元<b>186 条</b></span><span>海螺 H3<b>115 条</b></span><span>万象 2.2<b>102 条</b></span><span>海螺 2.3<b>97 条</b></span><span>Vidu<b>73 条</b></span><span class='sub'>全部盲评。多轮臂只有 6 家参与（只有它们接受了续写请求）。</span></div></div></div></div></div></section><section id="ai-rank"><div class="wrap">
 <h2><span class="sec">12</span>模型排名：把 AI 当唯一裁判</h2>
 <p class="lead">从这里开始是<b>第二部分</b>。第一部分问的是「AI 打分跟人类评测像不像」，分母是 176 个被人评过的任务；
 这一部分换一个问题：<b>不请人类，只看 AI 打分</b>，它怎么给这批模型排名。分母因此大得多——
