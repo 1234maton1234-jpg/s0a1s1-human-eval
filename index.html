@@ -724,6 +724,24 @@ AI 侧只有 0.52，更各归各。两个矩阵都是完整方形（含对角线
 13 项口径是 0.816 / 0.854：人类侧持平，AI 侧低了一档——涉及 AI 社会分的结论请按这个信度打折看。
 <br><b>口径已统一（09-12）：</b>社会维的 AI 分补满了<b>全部 178 个槽</b>（此前最后 2 条 expansion/Wan 2.2 缺），
 所以本节的人类均值、AI 均值、「人−AI」与 §02-F9、§07-B 表现在用的是<b>同一批 178 个槽</b>，不再有两套分母。</div>
+<div class="note" style="margin-top:10px"><b>社会维的 AI 分为什么比上一版低了一大截？</b>
+09-16 起，社会维的 AI 分整批换成了一次<b>对抗式审计</b>的重新判分：同一批 178 个槽、同一个判官、同一批视频，
+只把打分题面从「0/1/2，1 ＝ 部分完成或模糊」换成「目标标注只当假设、每一项从 0 分起、
+证据缺失或靠推断就一律 0 分，<b>不许拿 1 分兜底</b>」。8 项专属口径的 AI 均分因此从 <b>0.819</b> 落到 <b>0.593</b>。
+但这次下降<b>极不均匀</b>——逐项摆出来看，它几乎全部落在「社会弧本身」上，画面类的项反而涨了：</div>
+<div class="scrollx" style="margin-top:6px"><table class="mt"><thead><tr>
+<th class="l">社会维的 13 项</th><th>旧题面</th><th>新题面</th><th>变化</th></tr></thead>
+<tbody><tr><td class='l'>S0 情绪 <span class='dimkey'>专属 8 项</span></td><td>0.792</td><td>0.562</td><td><span class="n-a dn">-0.230</span></td></tr><tr><td class='l'>S0 意图 <span class='dimkey'>专属 8 项</span></td><td>0.743</td><td>0.460</td><td><span class="n-a dn">-0.283</span></td></tr><tr><td class='l'>A1 可见（重叠项）</td><td>0.840</td><td>0.815</td><td><span class="n-a dn">-0.025</span></td></tr><tr><td class='l'>A1 匹配（重叠项）</td><td>0.685</td><td>0.587</td><td><span class="n-a dn">-0.098</span></td></tr><tr><td class='l'>S1 情绪 <span class='dimkey'>专属 8 项</span></td><td>0.837</td><td>0.694</td><td><span class="n-a dn">-0.143</span></td></tr><tr><td class='l'>S1 意图 <span class='dimkey'>专属 8 项</span></td><td>0.856</td><td>0.674</td><td><span class="n-a dn">-0.181</span></td></tr><tr><td class='l'>情绪变化 <span class='dimkey'>专属 8 项</span></td><td>0.798</td><td>0.447</td><td><span class="n-a dn">-0.351</span></td></tr><tr><td class='l'>意图变化 <span class='dimkey'>专属 8 项</span></td><td>0.807</td><td>0.417</td><td><span class="n-a dn">-0.391</span></td></tr><tr><td class='l'>因果顺序 <span class='dimkey'>专属 8 项</span></td><td>0.761</td><td>0.593</td><td><span class="n-a dn">-0.169</span></td></tr><tr><td class='l'>无提前泄漏 <span class='dimkey'>专属 8 项</span></td><td>0.933</td><td>0.832</td><td><span class="n-a dn">-0.101</span></td></tr><tr><td class='l'>连续性（重叠项）</td><td>0.860</td><td>0.947</td><td><span class="n-a up">+0.087</span></td></tr><tr><td class='l'>物理一致性（重叠项）</td><td>0.750</td><td>0.918</td><td><span class="n-a up">+0.169</span></td></tr><tr><td class='l'>整体忠实度（重叠项）</td><td>0.646</td><td>0.320</td><td><span class="n-a dn">-0.326</span></td></tr></tbody></table></div>
+<div class="note" style="margin-top:6px">
+降得最狠的是 <b>意图变化</b>（-0.39）、<b>情绪变化</b>（-0.35）——新题面把这两项的门槛写死成「A1 之后必须拍到<b>可观察的前后差异</b>；
+静止不动的状态、开场即反应、发生在 A1 之前的改变一律 0 分」，而旧题面里「有点迹象但不够明确」是可以拿 1 分的。
+紧随其后的是 <b>整体忠实度</b>（-0.33）、<b>S0 意图</b>（-0.28）。反向的两项是 <b>物理一致性</b>（+0.17）、<b>连续性</b>（+0.09）：它们在新题面里属于「辅助项」，题面几乎没给它们加码，
+于是回到「画面本来就没坏」的高位。而「事件到底有没有发生」这件事本身几乎没有争议——<b>A1 可见</b>只降了 0.025。<br>
+一句话：这次掉分<b>不是「模型变差了」</b>（视频没换、判官没换），也<b>不是「判官整体变苛刻了」</b>（辅助项反而更宽），
+而是题面把「这条社会转折到底有没有真的发生」的门槛抬高了——社会弧的那几类证据（起始与结束状态、变化、时序、整体忠实）全线收紧，
+「画面做得像不像样」这条标准却没动。两版逐槽排序仍然一致（ρ=0.708），名次结论没有翻转，只是整体下移了一档；
+人类那一列逐家逐位没动，于是「人−AI」从 <b>-0.5pp</b>（基本打平）变成 <b>+22.2pp</b>。</div>
+
 <p class="sub2" style="margin:14px 0 6px">人类的 互动↔社会 高，未必说明这两维真有多少共同点——
 也可能只是「整体印象」在作怪：一条视频看着顺眼，四个维就一起打高。把<b>其余两个维度控制住</b>再看两两的净相关（<b>偏相关</b>），
 就能把这一层剥掉：</p>
