@@ -634,6 +634,33 @@ MiniMax H3 的物理 0.909 是全组唯一上 0.9 的，但它的社会维 0.625
 本轮 154/178 个槽被封过顶；人类侧的社会分也已改用同一套对抗式审计题面重评，分数同样被整体下压。
 所以「社会最难」既是判官与评测人的判断，也带着这把尺子自己的刻度，别直接读成
 「模型的社会转折真的比另外三维更差」。</span></div>
+
+<h3 style="margin-top:22px">C · 五轮长链（46 项）的画像与逐轮前缀分</h3>
+<p class="sub2" style="margin:2px 0 8px">上面 A、B 两段讲的是<b>单轮四维</b>那一臂；这一段换成
+<b>五轮长链</b>那一臂——同一条提示词连着续写五次（S0→A1→S1→A2→S2→…→S5），
+一条链一次评完，共 <b>46 项</b>（开头 1 项 + 每轮 5 项×5 轮 + 每交界 5 项×4 轮）。
+<b>前缀分</b>就是「走到第 N 轮为止，前面所有项一起算的平均」（2 轮 16 项 / 3 轮 26 项 /
+4 轮 36 项 / 5 轮 46 项）——它跟判官自己算的 <code>prefix_metrics</code> 是同一把尺子，
+所以下面人评和 AI 两行可以直接并排读。</p>
+<div class='scrollx'><table class='mt prof' style='min-width:640px'><thead><tr><th class='l'>生成器</th><th>尺子</th><th>2 轮</th><th>3 轮</th><th>4 轮</th><th>5 轮</th><th>Δ(5−2)</th></tr></thead><tbody><tr><td class='l' rowspan='2'><span class="gchip" style="--c:#2a78d6">Kling 3</span><span class='wlb-id'>N=8 条链</span></td><td>人评</td><td>0.820</td><td>0.815</td><td>0.811</td><td>0.799</td><td>-2.1pp</td></tr><tr><td>AI</td><td>0.973</td><td>0.942</td><td>0.932</td><td>0.897</td><td>-7.6pp</td></tr><tr><td class='l' rowspan='2'><span class="gchip" style="--c:#1baf7a">MiniMax H3</span><span class='wlb-id'>N=8 条链</span></td><td>人评</td><td>0.801</td><td>0.779</td><td>0.793</td><td>0.791</td><td>-1.0pp</td></tr><tr><td>AI</td><td>0.898</td><td>0.913</td><td>0.903</td><td>0.908</td><td>+0.9pp</td></tr><tr><td class='l' rowspan='2'><span class="gchip" style="--c:#eda100">MiniMax Hailuo 2.3</span><span class='wlb-id'>N=8 条链</span></td><td>人评</td><td>0.781</td><td>0.798</td><td>0.802</td><td>0.787</td><td>+0.5pp</td></tr><tr><td>AI</td><td>0.840</td><td>0.873</td><td>0.882</td><td>0.901</td><td>+6.1pp</td></tr><tr><td class='l' rowspan='2'><span class="gchip" style="--c:#4a3aa7">HunyuanVideo 1.5</span><span class='wlb-id'>N=5 条链</span></td><td>人评</td><td>0.362</td><td>0.392</td><td>0.397</td><td>0.394</td><td>+3.1pp</td></tr><tr><td>AI</td><td>0.506</td><td>0.535</td><td>0.536</td><td>0.552</td><td>+4.6pp</td></tr><tr><td class='l' rowspan='2'><span class="gchip" style="--c:#e87ba4">Wan 2.2</span><span class='wlb-id'>N=8 条链</span></td><td>人评</td><td>0.246</td><td>0.291</td><td>0.273</td><td>0.280</td><td>+3.4pp</td></tr><tr><td>AI</td><td>0.293</td><td>0.339</td><td>0.358</td><td>0.334</td><td>+4.1pp</td></tr><tr class='grp'><td class='l'>各家等权均值</td><td>人评</td><td>0.602</td><td>0.615</td><td>0.615</td><td>0.610</td><td>+0.8pp</td></tr><tr class='grp'><td class='l'>各家等权均值</td><td>AI</td><td>0.702</td><td>0.720</td><td>0.722</td><td>0.718</td><td>+1.6pp</td></tr></tbody></table></div>
+<p class="sub2" style="margin:10px 0 8px"><b>怎么读这张表：</b>先看两行是不是一起动：
+<b>5 家、37 条链</b>，<b>人评几乎是一条平线</b>（各家等权 0.602 → 0.615 → 0.615 → 0.610，
+全程 +0.8pp），AI 略往上抬（0.702 → 0.718，+1.6pp）。也就是说<b>链再长，人和判官都没有「越往后越撑不住」</b>——
+这和 §17 那个逐轮断崖不是一回事：那里看的是「同一轮的 5 项<b>同时</b>拿满 2 分」的严格通过率，
+这里是 46 项的平均分，两者一起读才是完整的图景。
+<span class="muted">另外注意前缀分本身会随链变长微微抬高：越往后，占比越大的「交界项」本来就比
+「轮内项」好拿分（§06-D 有分解），所以「5 轮那一列比 2 轮高一点」多半是构成变化，不是模型变强了。</span></p>
+<p class="sub2" style="margin:2px 0 8px"><b>强项与短板（自家内部，人评基准）：</b></p>
+<div class='scrollx'><table class='mt prof' style='min-width:460px'><thead><tr><th class='l'>生成器</th><th>自家最强的一项</th><th>自家最弱的一项</th></tr></thead><tbody><tr><td class='l'><span class="gchip" style="--c:#2a78d6">Kling 3</span></td><td style='background:color-mix(in srgb,var(--good) 9%,var(--card))'>起态衔接 <span class='rk' style='opacity:.95'>0.969</span></td><td style='background:color-mix(in srgb,var(--serious) 10%,var(--card))'>转折事件吻合 <span class='rk' style='opacity:.95'>0.600</span></td></tr><tr><td class='l'><span class="gchip" style="--c:#1baf7a">MiniMax H3</span></td><td style='background:color-mix(in srgb,var(--good) 9%,var(--card))'>人物一致 <span class='rk' style='opacity:.95'>0.938</span></td><td style='background:color-mix(in srgb,var(--serious) 10%,var(--card))'>转折事件吻合 <span class='rk' style='opacity:.95'>0.562</span></td></tr><tr><td class='l'><span class="gchip" style="--c:#eda100">MiniMax Hailuo 2.3</span></td><td style='background:color-mix(in srgb,var(--good) 9%,var(--card))'>转折事件可见 <span class='rk' style='opacity:.95'>0.912</span></td><td style='background:color-mix(in srgb,var(--serious) 10%,var(--card))'>道具状态延续 <span class='rk' style='opacity:.95'>0.547</span></td></tr><tr><td class='l'><span class="gchip" style="--c:#4a3aa7">HunyuanVideo 1.5</span></td><td style='background:color-mix(in srgb,var(--good) 9%,var(--card))'>不重播 <span class='rk' style='opacity:.95'>0.600</span></td><td style='background:color-mix(in srgb,var(--serious) 10%,var(--card))'>结果状态吻合 <span class='rk' style='opacity:.95'>0.280</span></td></tr><tr><td class='l'><span class="gchip" style="--c:#e87ba4">Wan 2.2</span></td><td style='background:color-mix(in srgb,var(--good) 9%,var(--card))'>场景一致 <span class='rk' style='opacity:.95'>0.641</span></td><td style='background:color-mix(in srgb,var(--serious) 10%,var(--card))'>结果状态吻合 <span class='rk' style='opacity:.95'>0.100</span></td></tr></tbody></table></div>
+<div class="note" style="margin-top:10px"><b>两条值得记的：</b>
+① 五家的短板有 <b>4 家</b>落在「<b>吻合</b>」类的那几项上——不是没拍到，是拍到的跟目标对不上
+（Kling 3 / H3 是「转折事件吻合」，Hunyuan / Wan 是「结果状态吻合」），只有 Hailuo 的短板是
+「道具状态延续」；反过来各家最强的一项全都出在<b>交界</b>或<b>可见性</b>上（起态衔接、人物一致、
+场景一致、转折事件可见），即「<b>接得上、看得到</b>没问题，「对不对」才是分水岭。
+② <b>这一段只有 5 家</b>（<span class="gchip" style="--c:#2a78d6">Kling 3</span>、<span class="gchip" style="--c:#1baf7a">MiniMax H3</span>、<span class="gchip" style="--c:#eda100">MiniMax Hailuo 2.3</span>、<span class="gchip" style="--c:#4a3aa7">HunyuanVideo 1.5</span>、<span class="gchip" style="--c:#e87ba4">Wan 2.2</span>）——长链臂本来就没让 Seedance 2 和 Vidu Q2 参加，
+所以这里的行<b>不许</b>和上面主表的行横向比，两边的项数和口径都不一样。
+<br><br>③ <b><span class="gchip" style="--c:#e87ba4">Wan 2.2</span> 那一行不是同一批链：</b>这里的人评覆盖到的是 expansion+pilot（8 条），而 §17 各家表里的 Wan 2.2 是 8 条 pilot —— <b>两张表都有「Wan 2.2」这一行、数字却不一样，不是算错，是批次不同</b>；其余四家在这一段与 §17 完全同链、AI 那四个数逐格相同。</div>
+
 </div></section>
 <section id="settings"><div class="wrap">
 <h2><span class="sec">06</span>三种设定各自暴露了什么 + 多轮会不会越往后越差</h2>
@@ -711,6 +738,9 @@ S0-A1 那张榜跟单轮几乎是另一回事：MiniMax H3 在单轮排第 1，�
 而且这一批<b>人评与 AI 用的是同一套 46 项、同一个 0/1/2</b>，所以两侧可以逐项、逐轮直接对，
 不需要任何折算（协议与逐轮明细见 §17）。</p>
 <div class='scrollx'><table class='mt prof' style='min-width:620px'><thead><tr><th class='l'>生成器</th><th>n</th><th>人评</th><th>AI</th><th>人−AI</th></tr></thead><tbody><tr><td class='l'><span class="gchip" style="--c:#2a78d6">Kling 3</span></td><td>8</td><td><span class='vv'>0.799</span></td><td>0.897</td><td><span class='tagpill b'>-9.8pp</span></td></tr><tr><td class='l'><span class="gchip" style="--c:#1baf7a">MiniMax H3</span></td><td>8</td><td><span class='vv'>0.791</span></td><td>0.908</td><td><span class='tagpill b'>-11.7pp</span></td></tr><tr><td class='l'><span class="gchip" style="--c:#eda100">MiniMax Hailuo 2.3</span></td><td>8</td><td><span class='vv'>0.787</span></td><td>0.901</td><td><span class='tagpill b'>-11.4pp</span></td></tr><tr><td class='l'><span class="gchip" style="--c:#4a3aa7">HunyuanVideo 1.5</span></td><td>5</td><td><span class='vv'>0.394</span></td><td>0.552</td><td><span class='tagpill b'>-15.9pp</span></td></tr><tr><td class='l'><span class="gchip" style="--c:#e87ba4">Wan 2.2</span></td><td>8</td><td><span class='vv'>0.280</span></td><td>0.334</td><td><span class='tagpill b'>-5.4pp</span></td></tr><tr class='strong'><td class='l'><b>全部</b> <span class='muted'>· 家等权</span></td><td>37</td><td><span class='vv'>0.610</span></td><td>0.718</td><td><span class='tagpill b'>-10.4pp</span></td></tr></tbody></table></div>
+<p class="sub2" style="margin:8px 0 0"><span class="muted">表里这一列是「走到<b>第 5 轮</b>」的前缀分。
+<b>走到第 2 / 3 / 4 / 5 轮的累计前缀分</b>逐家摆在 <b>§05-C</b>——五轮长链的能力画像里，
+人评与 AI 各一行，另外还列了 46 项拆成 11 个子维之后各家自家的强项与短板。</span></p>
 <p class="sub2" style="margin:10px 0 4px"><b>这 -10.4pp 差在哪一段</b>——
 前缀分是 46 项一起平均，所以总差能按「开头 1 项 / 轮内 25 项 / 交界 20 项」拆开：</p>
 <div class='scrollx'><table class='mt prof' style='min-width:640px'><thead><tr><th class='l'>那一段</th><th>项数</th><th>占前缀分</th><th>人</th><th>AI</th><th>人−AI</th><th>对总差的贡献</th></tr></thead><tbody><tr><td class='l'>开头</td><td>1</td><td>0.022</td><td>0.705</td><td>0.710</td><td><span class='tagpill b'>-0.5pp</span></td><td><b>-0.000</b></td></tr><tr><td class='l'>轮内 5×5</td><td>25</td><td>0.543</td><td>0.549</td><td>0.593</td><td><span class='tagpill b'>-4.4pp</span></td><td><b>-0.024</b></td></tr><tr><td class='l'>交界 5×4</td><td>20</td><td>0.435</td><td>0.681</td><td>0.875</td><td><span class='tagpill b'>-19.4pp</span></td><td><b>-0.084</b></td></tr></tbody></table></div>
