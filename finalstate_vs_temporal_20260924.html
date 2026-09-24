@@ -125,14 +125,15 @@ table.rep td{font-size:11.5px;padding:5px 7px}
 </style>
 </head><body>
 <div class="topbanner">本页每个数字由 <span class="mono">_rate_scratch/_finalstate_report.py</span>
- 现算；四道硬门任一不过就报错、不产出页面</div>
+ 现算；G1–G5 五道硬门任一不过就报错、不产出页面</div>
 <div class="wrap">
 
 <header>
 <h1>只看最后结果，会漏掉什么</h1>
 <p class="sub">把 168 支单轮视频按两把尺子各判一遍：一把只问「最后那一帧对不对」，
 一把问「S0→A1→S1 是不是按这个顺序走下来的」。前者放过、后者抓住的有 8 支 ——
-而且「时序」这一条结论有三个互相独立的来源，指的是同一批视频。</p>
+而且「时序」这一条结论有三个互相独立的来源，指的是同一批视频；第六节再把这套算法
+搬到线上评测的<b>多评测人</b>打分上，形状还在。</p>
 </header>
 
 <h2>一 · 一句话</h2>
@@ -172,7 +173,7 @@ table.rep td{font-size:11.5px;padding:5px 7px}
 </table>
 <p class="lg">前两行的 0 是定义使然（它们就是过关条件本身）。真正在做区分的是
  <b>full_action_trajectory</b> —— 它一项就抓下全部 8 支；
- <span class="mono">event_integrated_in_order</span> 另抓住其中 2 支（见第六节）。
+ <span class="mono">event_integrated_in_order</span> 另抓住其中 2 支（见第七节）。
  <span class="mono">reaction_to_event_shown</span>（对事件的反应）也属时序类，
  但这 8 支上全部为真，本组里不区分。</p>
 
@@ -213,7 +214,75 @@ table.rep td{font-size:11.5px;padding:5px 7px}
 人工把因果顺序打成 0 分的比例是 38% vs 8（4.7 倍）、
 人工 8 项均值是 1.02 vs 1.42。</p>
 
-<h2>六 · 具体到视频</h2>
+<h2>六 · 多评测人一致率：换一批人、换一份样本，形状还在</h2>
+<p>第五节那条「人工」来自<b>一位</b>评测人。这一节换成线上评测留下的<b>多人原始打分</b> ——
+ 每支视频 2–4 个人各自独立打，量表就是判官那套问题的人工版，其中四项恰好是上面两把尺子的对应项：
+ <span class="mono">complete</span>（完成）与 <span class="mono">s1_state</span>（S1 结束）对应「只看结果」，
+ <span class="mono">temporal</span>（时序整合）与 <span class="mono">trajectory</span>（完整轨迹）对应「时序」。
+ 八项都有值、且至少两个人打过的有 <b>142 支</b>（评人数 2 人 16 支、3 人 62 支、4 人 64 支），
+ 一共 <b>586 个「评测人对」</b>。</p>
+<p><b>先说清这是什么、不是什么。</b>这<b>不是第三把独立的尺子</b> —— 量表还是判官那套问题的人工版，
+ 换掉的是<b>打分的那些人</b>和<b>被评的样本</b>。所以这一节能证明的只有一件事：
+ 第四节那个形状不是一位评测人的怪癖。</p>
+<table>
+<tr><th>人工项（wbench 量表）</th><th class="num">时序挂 10 支</th>
+ <th class="num">都过 73 支</th><th class="num">差</th></tr>
+<tr class="grp"><td colspan="4">终点 —— 「只看结果」看得见</td></tr><tr><td>完成 <span class="mono tiny">complete</span></td><td class="num">1.65</td><td class="num">1.85</td><td class="num neg">-0.20</td></tr><tr><td>S1 结束 <span class="mono tiny">s1_state</span></td><td class="num">1.78</td><td class="num">1.83</td><td class="num">-0.05</td></tr><tr class="grp"><td colspan="4">时序 —— 「只看结果」看不见</td></tr><tr><td>时序整合 <span class="mono tiny">temporal</span></td><td class="num">1.36</td><td class="num">1.86</td><td class="num neg">-0.50</td></tr><tr><td>完整轨迹 <span class="mono tiny">trajectory</span></td><td class="num">1.46</td><td class="num">1.84</td><td class="num neg">-0.38</td></tr><tr class="grp"><td colspan="4">另外四项（不属于这两把尺子）</td></tr><tr><td>开始 <span class="mono tiny">start</span></td><td class="num">1.53</td><td class="num">1.81</td><td class="num neg">-0.27</td></tr><tr><td>S0 起始 <span class="mono tiny">s0_state</span></td><td class="num">1.59</td><td class="num">1.75</td><td class="num">-0.16</td></tr><tr><td>匹配 <span class="mono tiny">match</span></td><td class="num">1.15</td><td class="num">1.55</td><td class="num neg">-0.40</td></tr><tr><td>对 A1 反应 <span class="mono tiny">react</span></td><td class="num">1.58</td><td class="num">1.84</td><td class="num neg">-0.25</td></tr>
+</table>
+<p class="lg">过关判据：槽均 ≥ 1.5（「平均而言判为清楚正确」）。
+ 142 支里 <b>83 支</b>过了「只看结果」（58.5%），其中 <b>10 支</b>时序挂
+ （占过关的 12.0%）。落差的<b>方向</b>与第四节一致，但<b>没有判官那侧干净</b>：
+ 时序两项一起塌（时序整合 1.36 vs 1.86，差 -0.50；
+ 完整轨迹 1.46 vs 1.84，差 -0.38），
+ 终点两项里 <span class="mono">s1_state</span>（对应「结果动作」）几乎不动
+ （1.78 vs 1.83，差 -0.05），
+ 但 <span class="mono">complete</span>（完成）也掉了 1.65 vs 1.85
+ （差 -0.20）—— 多人这边它并没有纹丝不动。
+ 形状是「时序比终点狠约两倍」，不是「终点为零」。</p>
+<table>
+<tr><th>换最严的阈值再算一遍</th><th class="num">过关</th><th class="num">其中时序挂</th>
+ <th class="num">终点项差</th><th class="num">时序项差</th></tr>
+<tr><td>槽均 ≥ 1.5（上表口径）</td><td class="num">83 / 142（58.5%）</td>
+ <td class="num">10（12.0%）</td>
+ <td class="num">-0.05</td><td class="num">-0.50</td></tr>
+<tr><td>每位评测人都得打 2（最严）</td><td class="num">23 / 142（16.2%）</td>
+ <td class="num">8（34.8%）</td>
+ <td class="num">0.00</td><td class="num">-0.29</td></tr>
+</table>
+<p class="lg">口径放严之后，终点项两组之差<b>正好是 0.00</b>（这正是「只看结果」判据本身），
+ 时序那一侧仍然挂着 8 支。形状不随阈值走。</p>
+<h4>这 10 支，每个人分别打了什么</h4>
+<table class="rep">
+<tr><td>video</td><td class="num">评人</td><td>完成</td><td>S1 结束</td><td>时序整合</td>
+ <td>完整轨迹</td><td>分歧</td></tr>
+<tr><td class="mono tiny">s0a1s1_009_kling3</td><td class="num">2</td><td class="mono">2/2</td><td class="mono">2/2</td><td class="mono">2/2</td><td class="mono">1/1</td><td>全部人给低分</td></tr><tr><td class="mono tiny">s0a1s1_100061_kling3</td><td class="num">4</td><td class="mono">2/2/1/1</td><td class="mono">2/2/2/1</td><td class="mono">2/2/1/1</td><td class="mono">2/2/0/1</td><td>2/4 人给低分</td></tr><tr><td class="mono tiny">s0a1s1_200014_kling3</td><td class="num">4</td><td class="mono">2/2/1/1</td><td class="mono">0/2/2/2</td><td class="mono">0/2/2/0</td><td class="mono">0/2/2/1</td><td>2/4 人给低分</td></tr><tr><td class="mono tiny">s0a1s1_200086_seedance2</td><td class="num">3</td><td class="mono">2/2/1</td><td class="mono">2/2/2</td><td class="mono">2/0/1</td><td class="mono">2/2/1</td><td>2/3 人给低分</td></tr><tr><td class="mono tiny">s0a1s1_refined_015_kling3</td><td class="num">2</td><td class="mono">2/1</td><td class="mono">2/2</td><td class="mono">1/1</td><td class="mono">2/2</td><td>全部人给低分</td></tr><tr><td class="mono tiny">s0a1s1_refined_045_seedance2</td><td class="num">3</td><td class="mono">2/1/2</td><td class="mono">2/1/2</td><td class="mono">2/2/2</td><td class="mono">1/1/2</td><td>2/3 人给低分</td></tr><tr><td class="mono tiny">s0a1s1_refined_048_kling3</td><td class="num">4</td><td class="mono">2/2/2/1</td><td class="mono">2/2/2/2</td><td class="mono">2/2/2/1</td><td class="mono">2/2/0/1</td><td>2/4 人给低分</td></tr><tr><td class="mono tiny">s0a1s1_refined_048_vidu-q2</td><td class="num">3</td><td class="mono">2/2/1</td><td class="mono">2/2/1</td><td class="mono">1/2/1</td><td class="mono">2/1/1</td><td>全部人给低分</td></tr><tr><td class="mono tiny">s0a1s1_refined_054_kling3</td><td class="num">4</td><td class="mono">2/1/2/2</td><td class="mono">2/2/1/1</td><td class="mono">1/1/0/2</td><td class="mono">2/1/2/2</td><td>3/4 人给低分</td></tr><tr><td class="mono tiny">s0a1s1_refined_055_vidu-q2</td><td class="num">4</td><td class="mono">1/2/2/1</td><td class="mono">2/2/1/2</td><td class="mono">1/1/1/1</td><td class="mono">2/2/2/1</td><td>全部人给低分</td></tr>
+</table>
+<p class="lg">斜杠两侧就是<b>每一个人</b>的打分（0/1/2）。这 10 支里
+ <b>4 支是所有人都给了低分</b>，另外 6 支内部有分歧 ——
+ 「槽均」把分歧抹平了，所以下面这张一致率表得跟这张明细一起读。</p>
+<h4>一致率（142 支、两两配对；与《评测人之间一致性》那一页同一套算法）</h4>
+<table class="rep">
+<tr><td>人工项</td><td class="num">评测人对</td><td class="num">完全相同</td>
+ <td class="num">差 ≤ 1</td><td class="num">序数 α</td></tr>
+<tr><td>完成 <span class="mono tiny">complete</span></td><td class="num">586</td><td class="num">62.6%</td><td class="num">93.3%</td><td class="num">0.13</td></tr><tr><td>S1 结束 <span class="mono tiny">s1_state</span></td><td class="num">586</td><td class="num">58.5%</td><td class="num">93.3%</td><td class="num">0.29</td></tr><tr><td>时序整合 <span class="mono tiny">temporal</span></td><td class="num">586</td><td class="num">65.7%</td><td class="num">93.5%</td><td class="num">0.21</td></tr><tr><td>完整轨迹 <span class="mono tiny">trajectory</span></td><td class="num">586</td><td class="num">58.0%</td><td class="num">94.5%</td><td class="num">0.21</td></tr><tr><td>开始 <span class="mono tiny">start</span></td><td class="num">586</td><td class="num">63.0%</td><td class="num">94.7%</td><td class="num">0.27</td></tr><tr><td>S0 起始 <span class="mono tiny">s0_state</span></td><td class="num">586</td><td class="num">63.3%</td><td class="num">92.0%</td><td class="num">0.27</td></tr><tr><td>匹配 <span class="mono tiny">match</span></td><td class="num">586</td><td class="num">49.8%</td><td class="num">91.3%</td><td class="num">0.32</td></tr><tr><td>对 A1 反应 <span class="mono tiny">react</span></td><td class="num">586</td><td class="num">61.4%</td><td class="num">93.9%</td><td class="num">0.18</td></tr>
+</table>
+<p class="lg">逐项「完全相同」在 49.8–65.7% 之间、「差 ≤ 1」在 91.3% 以上 ——
+ 也就是说<b>分歧几乎都发生在相邻档（1 与 2）上</b>，很少有人把「过了」判成「没有」。
+ 两个关键项：时序整合 65.7% / 93.5%（α 0.21）、
+ 完整轨迹 58.0% / 94.5%（α 0.21）。</p>
+<div class="note">
+ <b>这一节的边界，三条都写在这里。</b>①它证明的是<b>形状可复现</b>，不是<b>同一批视频</b> ——
+ 多人这边挂的那 10 支与第四节判官那 8 支<b>只重叠 1 支</b>。
+ 两批样本只是重合了一点点，形状却一样。②上面那张表里
+ <span class="mono">match</span>（匹配）也掉了 -0.40，比完整轨迹还多一点 ——
+ 它不是时序项，本页也没主张它只在时序挂的那组掉；把它一并印出来，是为了不让读者
+ 只看到我想让人看到的两行。③一致率不是满分：
+ 逐项「完全相同」只有 49.8–65.7%，序数 α 也在 0.1–0.3 这个偏低的水位
+ （基率高的时候 α 天然被压低）。所以本页不主张「人类评分很精确」，
+ 只主张<b>「只看最后结果」看不见的东西，在换一批人之后照样看不见</b>。
+</div>
+
+<h2>七 · 具体到视频</h2>
 <p>下面 3 张卡是那 8 支里的 3 支。每张都把四层证据并排摆出来：
 「只看最后结果」的两个 check（全过）、「时序」的 check（挂在哪、原句与中译）、
 独立判官的逐段画面时间轴与反证、以及人工的 8 项打分。</p>
@@ -291,7 +360,7 @@ table.rep td{font-size:11.5px;padding:5px 7px}
  <p class="lg">列名：起点情绪 <span class='mono tiny'>s0_emotion</span> · 起点意图 <span class='mono tiny'>s0_intent</span> · 终点情绪 <span class='mono tiny'>s1_emotion</span> · 终点意图 <span class='mono tiny'>s1_intent</span> · 情绪变化 <span class='mono tiny'>emotion_shift</span> · 意图变化 <span class='mono tiny'>intent_shift</span> · 因果顺序 <span class='mono tiny'>causal_order</span> · 无提前泄露 <span class='mono tiny'>no_leak</span></p>
 </div>
 
-<h2>七 · 口径与限定</h2>
+<h2>八 · 口径与限定</h2>
 <ul>
 <li><b>「只看最后结果」是本页构造的对照物</b>，取值
  <span class="mono">event_completes ∧ resulting_action_shown</span>。
@@ -300,9 +369,11 @@ table.rep td{font-size:11.5px;padding:5px 7px}
 <li><b>8 / 168 = 4.8%</b>，不是一个大比例。本页主张的不是
  「这类问题很普遍」，而是<b>这类问题对「只看结果」从原理上不可见</b>：
  在这 8 支上，那把尺子完全失明。</li>
-<li><b>人工是一位评测人</b>按严格题面重评的结果
- （<span class="mono">human_social_rerate</span>，逐支视频一条），不是多人一致率；
- 所以它在本页里是「一条独立证据」，不等于「人类共识」。</li>
+<li><b>人工侧有两套，不要混用。</b>第四、五节用的是<b>一位</b>评测人按严格题面重评的结果
+ （<span class="mono">human_social_rerate</span>，逐支视频一条），它是「一条独立证据」，
+ 不等于「人类共识」；第六节的<b>多人</b>那一套是线上评测的原始打分（每支 2–4 人，
+ wbench 量表），它才有一致率 —— 但两套的题面、量表与样本都不同，
+ 只能各自成立，不能相互替代或相加。</li>
 <li><b>基率提醒。</b>全部 168 支里，人工把「因果顺序」打成 0 的有 41 支
 （24%）、把「无提前泄露」打成 0 的有 34 支（20%）、
  strict-V2 亮泄露旗的有 10%。所以「有人给 0」本身并不稀奇。
