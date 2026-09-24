@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>只看最后结果，会漏掉什么 · 时序检查抓出的 8 支</title>
+<style>
+:root{color-scheme:light;
+ --bg:#fff;--card:#fff;--panel:#fafbfc;--soft:#f5f7fa;
+ --ink:#1a1a1a;--ink2:#555;--muted:#8a8a8a;--line:#ececec;--axis:#dcdcdc;
+ --blue:#2563eb;--blue-bg:#eff6ff;--blue-line:#dbeafe;--blue-ink:#1e40af;
+ --bar:#2563eb;--barw:#dbeafe;--pos:#2563eb;--neg:#c0392b;
+ --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',Arial,sans-serif;
+ --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+[data-theme=dark]{color-scheme:dark;
+ --bg:#0f1115;--card:#181a1f;--panel:#1b1e24;--soft:#22262d;
+ --ink:#f2f3f5;--ink2:#b8bcc4;--muted:#8b9099;--line:#2b2f36;--axis:#3b414a;
+ --blue:#3b82f6;--blue-bg:#141c2b;--blue-line:#1e3a5f;--blue-ink:#93c5fd;
+ --bar:#3b82f6;--barw:#1e3a5f;--pos:#3b82f6;--neg:#e05a4a;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 var(--sans);
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:0 26px 72px}
+.topbanner{background:var(--blue-bg);border-bottom:1px solid var(--blue-line);padding:9px 26px;
+ text-align:center;font-size:12.5px;color:var(--blue-ink)}
+header{padding:34px 0 6px}
+h1{font-size:25px;line-height:1.3;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--ink2);font-size:13.5px;margin:0}
+h2{font-size:16.5px;margin:34px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+h3{font-size:13.5px;margin:20px 0 8px;color:var(--ink2);font-weight:600}
+p{margin:9px 0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:16px 0 6px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile .k{font-size:12px;color:var(--muted);margin-bottom:5px}
+.tile .v{font-size:27px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.tile .v small{font-size:14px;font-weight:600;color:var(--ink2)}
+.tile .n{font-size:11.5px;color:var(--muted);margin-top:5px;font-family:var(--mono)}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:10px 0 4px}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:12px;background:var(--soft);
+ position:sticky;top:0;z-index:2}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:12px}
+td.l{max-width:330px}
+tr.grp td{background:var(--soft);font-weight:600;color:var(--ink2);font-size:12px}
+tr.lo td{color:var(--muted)}
+table.rep{margin:10px 0 4px}
+table.rep td,table.rep th{font-size:12px;padding:5px 9px}
+tr.tot td{border-top:1px solid var(--line);background:var(--blue-bg)}
+.sg{display:inline-block;font-size:10px;font-weight:600;color:var(--blue-ink);
+ background:var(--blue-bg);border:1px solid var(--blue-line);border-radius:4px;
+ padding:0 4px;margin-left:2px;vertical-align:1px}
+.panel{border:1px solid var(--line);border-radius:10px;padding:12px 14px 14px;margin:12px 0;
+ background:var(--card)}
+.phead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+ flex-wrap:wrap;margin-bottom:9px}
+.pmeta{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+.brow{display:grid;grid-template-columns:210px 1fr 58px 62px;gap:9px;align-items:center;
+ padding:2.5px 0}
+.bname{font-size:11.5px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btrack{background:var(--barw);border-radius:3px;height:11px;position:relative}
+.btrack i{display:block;height:100%;background:var(--bar);border-radius:0 4px 4px 0}
+.dtrack{background:var(--soft);border-radius:3px;height:11px;position:relative;overflow:hidden}
+.dtrack:before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--axis)}
+.dtrack i{position:absolute;top:0;height:100%;border-radius:2px}
+.dtrack i.p{left:50%;background:var(--pos);border-radius:0 4px 4px 0}
+.dtrack i.m{right:50%;background:var(--neg);border-radius:4px 0 0 4px}
+.bval{font-size:11.5px;font-family:var(--mono);text-align:right}
+.bn{font-size:10.5px;color:var(--muted);font-family:var(--mono);text-align:right}
+.note{background:var(--panel);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;
+ padding:11px 15px;margin:14px 0;font-size:13px;color:var(--ink2)}
+.note b{color:var(--ink)}
+ul{margin:8px 0;padding-left:20px}li{margin:5px 0;font-size:13.5px}
+.lg{font-size:12px;color:var(--muted);margin:6px 0 0}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 5px 0 12px;
+ vertical-align:-1px}
+#themeBtn{position:fixed;right:18px;bottom:18px;border:1px solid var(--axis);background:var(--card);
+ color:var(--ink2);border-radius:999px;padding:7px 13px;font:12px var(--sans);cursor:pointer}
+@media print{#themeBtn{display:none}.topbanner{display:none}body{font-size:11.5px}
+ .panel{break-inside:avoid}.brow{padding:1.5px 0}th{position:static}}
+@media(max-width:640px){.brow{grid-template-columns:130px 1fr 52px 54px}}
+</style>
+
+<style>
+.mono{font-family:var(--mono)}.tiny{font-size:10.5px;color:var(--muted)}
+.vpin{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+ margin:10px 0;font-size:11.5px;color:var(--muted);font-family:var(--mono);line-height:1.9;
+ word-break:break-all}
+.funnelbar{display:flex;height:26px;border-radius:5px;overflow:hidden;gap:2px;margin:16px 0 10px}
+.funnelbar i{display:block;height:100%}
+.fl{display:inline-block;font-size:11.5px;color:var(--ink2);margin:0 16px 0 0;white-space:nowrap}
+.fl i,.lgd i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 5px 0 0;
+ vertical-align:-1px}
+td.neg{color:var(--neg);font-weight:600}
+tr.hi td{background:var(--blue-bg)}
+.dtrack{min-width:70px}
+video{width:100%;max-height:340px;background:#000;border-radius:8px;display:block;margin:10px 0 4px}
+.tgt{background:var(--soft);border-radius:8px;padding:9px 12px;font-size:12.5px;margin:6px 0 10px}
+.tgt>div{margin:3px 0}
+.lab{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:700;
+ border-radius:3px;padding:0 5px;margin-right:7px;vertical-align:1px}
+.lab.s0{background:#eef2f7;color:#475569}.lab.a1{background:#fdf1e3;color:#a15c11}
+.lab.s1{background:#e7f4ec;color:#256b41}
+[data-theme=dark] .lab.s0{background:#242a33;color:#9aa6b6}
+[data-theme=dark] .lab.a1{background:#332615;color:#d09a52}
+[data-theme=dark] .lab.s1{background:#16301f;color:#6cc08c}
+.ck{border:1px solid var(--line);border-left-width:3px;border-radius:0 8px 8px 0;
+ padding:8px 12px;margin:7px 0;background:var(--card)}
+.ck.ok{border-left-color:var(--bar)}.ck.no{border-left-color:var(--neg)}
+.ckh{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.ckb{font-weight:700;font-size:13px}.ck.ok .ckb{color:var(--pos)}.ck.no .ckb{color:var(--neg)}
+.cke{font-size:12.5px;color:var(--ink2);margin-top:3px}
+.ckz{font-size:12.5px;margin-top:5px;padding-top:5px;border-top:1px dashed var(--line)}
+h4{font-size:12.5px;margin:15px 0 6px;color:var(--ink2)}
+.tl{border-left:2px solid var(--axis);margin:8px 0 10px 3px;padding-left:13px}
+.tlrow{padding:4px 0;font-size:12.5px}
+.tlp{display:inline-block;font-size:10.5px;font-weight:700;border-radius:3px;
+ background:var(--soft);padding:0 6px;margin-right:8px;vertical-align:1px}
+.tle{color:var(--ink2)}
+.tlz{color:var(--ink);margin-top:2px}
+.s2{font-size:12.5px;margin:8px 0}
+ul.ctr li{font-size:12.5px;color:var(--ink2)}
+.cz{color:var(--ink);margin-top:2px}
+.why{font-size:13px;color:var(--ink2);margin:8px 0 2px}
+.ct{font-size:14.5px}
+table.rep tr:first-child td{background:var(--soft);color:var(--ink2);font-size:11px}
+table.rep td{font-size:11.5px;padding:5px 7px}
+</style>
+</head><body>
+<div class="topbanner">本页每个数字由 <span class="mono">_rate_scratch/_finalstate_report.py</span>
+ 现算；四道硬门任一不过就报错、不产出页面</div>
+<div class="wrap">
+
+<header>
+<h1>只看最后结果，会漏掉什么</h1>
+<p class="sub">把 168 支单轮视频按两把尺子各判一遍：一把只问「最后那一帧对不对」，
+一把问「S0→A1→S1 是不是按这个顺序走下来的」。前者放过、后者抓住的有 8 支 ——
+而且「时序」这一条结论有三个互相独立的来源，指的是同一批视频。</p>
+</header>
+
+<h2>一 · 一句话</h2>
+<div class="tiles">
+ <div class="tile"><div class="k">只看最后结果，判过</div>
+  <div class="v">70<small> / 168</small></div>
+  <div class="n">41.7%　（结局 ∧ 结果动作）</div></div>
+ <div class="tile"><div class="k">这 70 支里，时序检查又刷掉</div>
+  <div class="v">8<small> 支</small></div>
+  <div class="n">占 168 的 4.8%　·　占已过关的 11.4%</div></div>
+ <div class="tile"><div class="k">这 8 支的「终点」两项人评</div>
+  <div class="v">1.25 <small>/</small> 1.50</div>
+  <div class="n">都过的 62 支：1.35 / 1.39　→ 差 -0.10 / 0.11</div></div>
+ <div class="tile"><div class="k">这 8 支的「起点 / 顺序」人评</div>
+  <div class="v" style="color:var(--neg)">0.75 <small>/</small> 0.62</div>
+  <div class="n">都过的 62 支：1.55 / 1.39　→ 差 -0.80 / -0.76</div></div>
+</div>
+<div class="note">
+ <b>这就是全部论点。</b>一个只盯最后一帧的评测器，会把这 8 支与「全程正确」的
+ 62 支判成同一档 —— 因为它们的<b>终点分确实一样</b>（终点情绪 1.25 vs
+ 1.35、终点意图 1.50 vs 1.39，差 -0.10 / 0.11，在噪声里）。
+ 差别全在<b>起点</b>（起点情绪 0.75 vs 1.55，差 -0.80）、
+<b>顺序</b>（因果顺序 0.62 vs 1.39，差 -0.76）与<b>提前泄露</b>
+（0.75 vs 1.44，差 -0.69）上 —— 而这三样东西在「最后结果」里根本不存在。
+</div>
+
+<h2>二 · 两把尺子是怎么分的</h2>
+<p>判官 wbench 树在 <span class="mono">event_edit_adherence</span> 与
+ <span class="mono">subject_action_adherence</span> 两块里各问 5 个问题，
+ 其中两个问终点、两个问过程。本页把「只看最后结果」定义成前两个的合取 ——
+<b>它不是我们真跑过的某个模型</b>，是按判官自己的 check 名拼出来的一个假想评测器，
+ 它拿到的信息量就是「最后那一帧对上了没有」。这是一次反事实推演，不是一个基线成绩。</p>
+<table>
+<tr><th>判官的 check</th><th>问的是什么</th><th>属于哪把尺子</th>
+ <th class="num">过结果那 70 支里<br>挂了几支</th></tr>
+<tr><td class="mono">event_completes</td><td>结局那一下拍出来了</td><td>只看结果</td><td class="num">0</td></tr><tr><td class="mono">resulting_action_shown</td><td>结果动作演出来了</td><td>只看结果</td><td class="num">0</td></tr><tr><td class="mono">event_integrated_in_order</td><td>S0→A1→S1 按顺序整合、无提前泄露</td><td>时序</td><td class="num">2</td></tr><tr class="hi"><td class="mono">full_action_trajectory</td><td>整条动作轨迹完整</td><td>时序</td><td class="num">8</td></tr><tr><td class="mono">reaction_to_event_shown</td><td>对事件的反应（本组不区分）</td><td>时序</td><td class="num">0</td></tr>
+</table>
+<p class="lg">前两行的 0 是定义使然（它们就是过关条件本身）。真正在做区分的是
+ <b>full_action_trajectory</b> —— 它一项就抓下全部 8 支；
+ <span class="mono">event_integrated_in_order</span> 另抓住其中 2 支（见第六节）。
+ <span class="mono">reaction_to_event_shown</span>（对事件的反应）也属时序类，
+ 但这 8 支上全部为真，本组里不区分。</p>
+
+<h2>三 · 漏斗</h2>
+<div class="funnelbar"><i style="width:58.3333%;background:var(--neg)" title="结果就没过关 98 支"></i><i style="width:4.7619%;background:#e8a33d" title="结果过关、时序挂 8 支"></i><i style="width:36.9048%;background:var(--bar)" title="结果与时序都过 62 支"></i></div>
+<div><span class="fl"><i style="background:var(--neg)"></i>结果就没过关 <b>98</b> 支</span><span class="fl"><i style="background:#e8a33d"></i>结果过关、时序挂 <b>8</b> 支</span><span class="fl"><i style="background:var(--bar)"></i>结果与时序都过 <b>62</b> 支</span></div>
+<p>168 支里，98 支连结果都没拍对（结局或结果动作缺一个）——
+ 这批不在本页论点内，因为「只看结果」本来就能抓住它们。论点在中间那一小段：
+<b>结果拍对了、但过程不对</b>的 8 支。</p>
+
+<h2>四 · 罚分落在哪一项上（核心证据）</h2>
+<p>下表是人工严格 8 项在两组上的逐项均值（0–2 档）。左列是「时序挂」的 8 支，
+ 右列是「结果与时序都过」的 62 支（这一小节里当对照组），最后一列是两组之差。</p>
+<table>
+<tr><th>人工项</th><th class="num">时序挂 8 支</th>
+ <th class="num">都过 62 支</th><th class="num">差</th><th>差（发散条）</th></tr>
+<tr class="grp"><td colspan="5">终点 —— 「只看最后结果」看得见</td></tr><tr><td>终点情绪 <span class="mono tiny">s1_emotion</span></td><td class="num">1.25</td><td class="num">1.35</td><td class="num">-0.10</td><td><div class="dtrack"><i class="m" style="width:6.6%"></i></div></td></tr><tr><td>终点意图 <span class="mono tiny">s1_intent</span></td><td class="num">1.50</td><td class="num">1.39</td><td class="num">+0.11</td><td><div class="dtrack"><i class="p" style="width:7.1%"></i></div></td></tr><tr class="grp"><td colspan="5">起点 —— 看不见</td></tr><tr><td>起点情绪 <span class="mono tiny">s0_emotion</span></td><td class="num">0.75</td><td class="num">1.55</td><td class="num neg">-0.80</td><td><div class="dtrack"><i class="m" style="width:50.0%"></i></div></td></tr><tr><td>起点意图 <span class="mono tiny">s0_intent</span></td><td class="num">1.00</td><td class="num">1.53</td><td class="num neg">-0.53</td><td><div class="dtrack"><i class="m" style="width:33.3%"></i></div></td></tr><tr class="grp"><td colspan="5">变化 —— 看不见</td></tr><tr><td>情绪变化 <span class="mono tiny">emotion_shift</span></td><td class="num">1.00</td><td class="num">1.29</td><td class="num neg">-0.29</td><td><div class="dtrack"><i class="m" style="width:18.2%"></i></div></td></tr><tr><td>意图变化 <span class="mono tiny">intent_shift</span></td><td class="num">1.25</td><td class="num">1.45</td><td class="num neg">-0.20</td><td><div class="dtrack"><i class="m" style="width:12.6%"></i></div></td></tr><tr class="grp"><td colspan="5">顺序 —— 看不见</td></tr><tr><td>因果顺序 <span class="mono tiny">causal_order</span></td><td class="num">0.62</td><td class="num">1.39</td><td class="num neg">-0.76</td><td><div class="dtrack"><i class="m" style="width:47.7%"></i></div></td></tr><tr><td>无提前泄露 <span class="mono tiny">no_leak</span></td><td class="num">0.75</td><td class="num">1.44</td><td class="num neg">-0.69</td><td><div class="dtrack"><i class="m" style="width:42.9%"></i></div></td></tr>
+</table>
+<p class="lg">发散条以 0 为中心，左为负（时序挂那组更低），满刻度 ±0.80。
+ G4 硬门钉死：终点两项 |差| 必须 ≤ 0.20，起点与顺序四项差必须 ≤ −0.50。</p>
+<div class="note">
+ <b>同一个「结局」，一把尺子看得见、另一把看得见，第三样东西谁都看不见。</b>
+ 终点情绪与终点意图两组只差 -0.10 / 0.11 —— 在噪声里，说明「只看结果」判它们
+ 没问题是对的：它们的结局确实没问题。而起点情绪 -0.80、因果顺序 -0.76、
+ 无提前泄露 -0.69 —— 这三个落差全发生在「最后结果」这把尺子<b>照不到的地方</b>。
+</div>
+
+<h2>五 · 三个互相独立的来源，指的是同一批视频</h2>
+<table>
+<tr><th>来源</th><th class="num">时序挂 8 支</th>
+ <th class="num">都过 62 支</th></tr>
+<tr><td>时序判官（wbench 树）—— 时序两项挂了几支</td><td class="num">8 / 8</td><td class="num">0 / 62</td></tr><tr><td>独立判官 strict-V2 —— 亮「提前泄露」旗的比例</td><td class="num">38%</td><td class="num">3%</td></tr><tr><td>独立判官 strict-V2 —— causal_order 均值（0–2）</td><td class="num">1.25</td><td class="num">1.74</td></tr><tr><td>人工 —— 「因果顺序」打 0 分的比例</td><td class="num">38%</td><td class="num">8%</td></tr><tr><td>人工 —— 严格 8 项均值（0–2）</td><td class="num">1.02</td><td class="num">1.42</td></tr>
+</table>
+<p class="lg">三条线彼此独立：<b>时序判官</b>是我们那套 16 项 wbench 判官里问过程的那几个问题；
+<b>strict-V2 判官</b>是另一棵独立的树（对抗式审计口径，自带 0–2 的 criteria 与一枚布尔的
+「提前泄露」旗）；<b>人工</b>是按严格题面重评的一位评测人。三者在同一批 8 支上
+同时给出各自最差的一档：泄漏旗的比例是 38% vs 3（11.6 倍）、
+人工把因果顺序打成 0 分的比例是 38% vs 8（4.7 倍）、
+人工 8 项均值是 1.02 vs 1.42。</p>
+
+<h2>六 · 具体到视频</h2>
+<p>下面 3 张卡是那 8 支里的 3 支。每张都把四层证据并排摆出来：
+「只看最后结果」的两个 check（全过）、「时序」的 check（挂在哪、原句与中译）、
+独立判官的逐段画面时间轴与反证、以及人工的 8 项打分。</p>
+
+<div class="panel">
+ <div class="phead"><div><b class="ct">提前响应：<b>还没剥开就笑了</b></b> <span class="mono tiny">s0a1s1_072_kling3</span></div>
+  <div class="pmeta">kling3</div></div>
+ <p class="why">目标要求 S0 是「嫌弃地躲开这个怪果子」，A1 才把果子剥开、露出草莓。视频里她在 00:01 —— 手还没碰到果子的时候 —— 就已经笑了。而结局（草莓露出来、举起来要吃）<b>完全正确</b>。</p>
+ <video controls preload="metadata" src="https://1234maton1234-jpg.github.io/s0a1s1-human-eval/s0_a1_s1_full_v1/videos/kling3/s0a1s1_072.mp4"></video>
+ <div class="tgt">
+  <div><span class="lab s0">S0</span>A person recoils from a strange slimy fruit on a table, nose wrinkled and body leaning away.</div>
+  <div><span class="lab a1">A1</span>They peel back the slimy-looking outer layer and reveal a glossy strawberry inside.</div>
+  <div><span class="lab s1">S1</span>Their face breaks into a big smile and they quickly bring the strawberry up to eat.</div>
+ </div>
+ <h4>「只看最后结果」这把尺子 —— 两项<b>全过</b></h4>
+ <div class="ck ok"><div class="ckh"><span class="ckb">✓ 过</span><span class="mono tiny">event_completes</span></div><div class="cke">The strawberry is fully revealed and separated from the outer layer.</div><div class="ckz">草莓被完整地露出来、与外层分开了。</div></div> <div class="ck ok"><div class="ckh"><span class="ckb">✓ 过</span><span class="mono tiny">resulting_action_shown</span></div><div class="cke">She lifts the strawberry towards her mouth.</div><div class="ckz">她把草莓举向嘴边。</div></div>
+ <h4>「时序」这把尺子 —— 挂在这</h4>
+ <div class="ck no"><div class="ckh"><span class="ckb">✗ 挂</span><span class="mono tiny">event_integrated_in_order</span></div><div class="cke">The woman smiles at 00:01, before the peeling event begins, violating the strict chronological order and no-foreshadowing rule.</div><div class="ckz">这位女士在 00:01 就笑了，<b>早于「剥开」这个事件开始</b> —— 违反了严格的时间顺序与「不许预先泄露」的规则。</div></div> <div class="ck no"><div class="ckh"><span class="ckb">✗ 挂</span><span class="mono tiny">full_action_trajectory</span></div><div class="cke">The trajectory is broken because she smiles before the turning event occurs.</div><div class="ckz">轨迹是断的：她在转折事件发生<b>之前</b>就笑了。</div></div>
+ <h4>独立判官 strict-V2 的三段时间轴</h4>
+ <div class="tl"><div class="tlrow"><span class="tlp">前</span><span class="tle">The woman looks down at a green fruit on the table with a scrunched, disgusted facial expression (wrinkled nose, squinted eyes). Her hands rest on the table next to the fruit.</span><div class="tlz">她低头看着桌上一个绿色果子，皱着鼻子、眯着眼，表情嫌弃；手搭在果子旁边的桌面上。</div></div><div class="tlrow"><span class="tlp">事件</span><span class="tle">She reaches out, pulls the two halves of the green fruit apart, and reveals a red strawberry inside. Her eyes widen and her mouth opens in surprise.</span><div class="tlz">她伸手把绿果子的两半掰开，露出里面一颗红色草莓；她睁大眼睛、张嘴惊讶。</div></div><div class="tlrow"><span class="tlp">后</span><span class="tle">She smiles widely, picks up the strawberry, and lifts it up toward her mouth.</span><div class="tlz">她咧嘴笑了，拿起草莓举向嘴边。</div></div></div>
+ <div class="s2">提前泄露旗 = <b>是</b> ｜ causal_order = <b>1</b>（0–2 档）</div>
+ <h4>独立判官给出的反证</h4>
+ <ul class="ctr"><li>At 00:00, the woman does not recoil or lean away from the fruit; she remains leaning forward over it with her hands resting nearby.<div class="cz">00:00 时她并没有往后退或躲开这个果子 —— 她反而前倾伏在它上面，手就搭在旁边。</div></li><li>At 00:01, before she even touches or opens the fruit, she breaks into a smile, violating the disgusted S0 baseline before the trigger event occurs.<div class="cz"><b>00:01，她还没碰到、更没打开那个果子，就先笑了起来</b> —— 在触发事件发生之前就破坏了「嫌弃」的起点击线。</div></li></ul>
+ <h4>人工（严格题面，一位评测人）</h4>
+ <table class="rep"><tr><td>起点情绪</td><td>起点意图</td><td>终点情绪</td><td>终点意图</td><td>情绪变化</td><td>意图变化</td><td>因果顺序</td><td>无提前泄露</td></tr><tr><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num neg">0</td><td class="num neg">0</td></tr></table>
+ <!-- 第一行是列名（CSS 把 tr:first-child 当表头），第二行才是分数 -->
+ <p class="lg">列名：起点情绪 <span class='mono tiny'>s0_emotion</span> · 起点意图 <span class='mono tiny'>s0_intent</span> · 终点情绪 <span class='mono tiny'>s1_emotion</span> · 终点意图 <span class='mono tiny'>s1_intent</span> · 情绪变化 <span class='mono tiny'>emotion_shift</span> · 意图变化 <span class='mono tiny'>intent_shift</span> · 因果顺序 <span class='mono tiny'>causal_order</span> · 无提前泄露 <span class='mono tiny'>no_leak</span></p>
+</div>
+<div class="panel">
+ <div class="phead"><div><b class="ct">提前响应：<b>苍蝇从第一帧就在勺子上</b></b> <span class="mono tiny">s0a1s1_009_kling3</span></div>
+  <div class="pmeta">kling3</div></div>
+ <p class="why">A1 是「再舀一勺，死苍蝇清楚地卡在酸奶里」—— 靠的是「揭示」这个动作。视频里苍蝇从头到尾都在，没有揭示，S0 那条干净的基线也就不存在了。而结局（厌恶地推开杯子）是对的。</p>
+ <video controls preload="metadata" src="https://1234maton1234-jpg.github.io/s0a1s1-human-eval/s0_a1_s1_full_v1/videos/kling3/s0a1s1_009.mp4"></video>
+ <div class="tgt">
+  <div><span class="lab s0">S0</span>A woman smiles and lightly chuckles while eating from a yogurt cup.</div>
+  <div><span class="lab a1">A1</span>She lifts another spoonful and a dead fly is clearly visible stuck in the yogurt.</div>
+  <div><span class="lab s1">S1</span>Her face tightens, she jerks the spoon back, and shoves the cup away.</div>
+ </div>
+ <h4>「只看最后结果」这把尺子 —— 两项<b>全过</b></h4>
+ <div class="ck ok"><div class="ckh"><span class="ckb">✓ 过</span><span class="mono tiny">event_completes</span></div><div class="cke">The fly remains visible on the spoon throughout the clip.</div><div class="ckz">苍蝇在整个片子里一直留在勺子上。</div></div> <div class="ck ok"><div class="ckh"><span class="ckb">✓ 过</span><span class="mono tiny">resulting_action_shown</span></div><div class="cke">She jerks the spoon back and shoves the cup away.</div><div class="ckz">她把勺子猛地一缩，把杯子推开。</div></div>
+ <h4>「时序」这把尺子 —— 挂在这</h4>
+ <div class="ck no"><div class="ckh"><span class="ckb">✗ 挂</span><span class="mono tiny">event_integrated_in_order</span></div><div class="cke">The fly is visible from the very first frame, overlapping with the opening state (S0) rather than appearing after it.</div><div class="ckz">苍蝇从<b>第一帧就可见</b>，与起始状态（S0）重叠，而不是在它之后才出现。</div></div> <div class="ck no"><div class="ckh"><span class="ckb">✗ 挂</span><span class="mono tiny">full_action_trajectory</span></div><div class="cke">The chronological trajectory is broken because the fly is present during the initial smiling phase, violating the strict order.</div><div class="ckz">时间轨迹是断的：苍蝇在最初的「微笑」阶段就已经在了，破坏了严格顺序。</div></div>
+ <h4>独立判官 strict-V2 的三段时间轴</h4>
+ <div class="tl"><div class="tlrow"><span class="tlp">前</span><span class="tle">The woman is smiling and laughing while holding a spoon of yogurt with a fly already visible on it.</span><div class="tlz">她端着勺子笑，勺子上<b>已经</b>看得见苍蝇。</div></div><div class="tlrow"><span class="tlp">事件</span><span class="tle">The woman's smile fades as she stares at the spoon with the fly on it. No lifting action or revelation occurs; the spoon remains in the same position.</span><div class="tlz">她的笑容消失，盯着勺子上的苍蝇。<b>没有「举起」这个动作、也没有揭示</b>；勺子停在原位。</div></div><div class="tlrow"><span class="tlp">后</span><span class="tle">The woman's face contorts into a disgusted grimace, and she pulls her head back slightly while continuing to hold the cup and spoon in place.</span><div class="tlz">她的脸皱成厌恶的表情，头微微往后缩，杯子和勺子仍举在原处。</div></div></div>
+ <div class="s2">提前泄露旗 = <b>是</b> ｜ causal_order = <b>1</b>（0–2 档）</div>
+ <h4>独立判官给出的反证</h4>
+ <ul class="ctr"><li>The fly is already fully visible on the spoon at 00:00, meaning there is no 'revelation' event.<div class="cz">苍蝇在 00:00 就已经完整地显在勺子上，也就是说<b>根本不存在「揭示」这个事件</b>。</div></li><li>The woman does not shove the cup away or jerk the spoon back at 00:07-00:09; she holds them stationary while grimacing.<div class="cz">00:07–00:09 她并没有推开杯子或把勺子缩回来，只是皱着眉一动不动地举着。</div></li></ul>
+ <h4>人工（严格题面，一位评测人）</h4>
+ <table class="rep"><tr><td>起点情绪</td><td>起点意图</td><td>终点情绪</td><td>终点意图</td><td>情绪变化</td><td>意图变化</td><td>因果顺序</td><td>无提前泄露</td></tr><tr><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">1</td><td class="num neg">0</td><td class="num neg">0</td><td class="num neg">0</td><td class="num neg">0</td></tr></table>
+ <!-- 第一行是列名（CSS 把 tr:first-child 当表头），第二行才是分数 -->
+ <p class="lg">列名：起点情绪 <span class='mono tiny'>s0_emotion</span> · 起点意图 <span class='mono tiny'>s0_intent</span> · 终点情绪 <span class='mono tiny'>s1_emotion</span> · 终点意图 <span class='mono tiny'>s1_intent</span> · 情绪变化 <span class='mono tiny'>emotion_shift</span> · 意图变化 <span class='mono tiny'>intent_shift</span> · 因果顺序 <span class='mono tiny'>causal_order</span> · 无提前泄露 <span class='mono tiny'>no_leak</span></p>
+</div>
+<div class="panel">
+ <div class="phead"><div><b class="ct">起点整段没演：<b>蛇出来了，可是没有举拳头和锤子</b></b> <span class="mono tiny">s0a1s1_refined_029_vidu-q2</span></div>
+  <div class="pmeta">vidu-q2</div></div>
+ <p class="why">目标要求 S0 是「皱眉、举起拳头、去抽屉里摸锤子」。视频直接从开抽屉开始，S0 那一整段动作不存在。而结局（蛇弹出来、他往后跳）<b>完全正确</b>。</p>
+ <video controls preload="metadata" src="https://1234maton1234-jpg.github.io/s0a1s1-human-eval/s0_a1_s1_refined_single_v1/videos/vidu-q2/s0a1s1_refined_029.mp4"></video>
+ <div class="tgt">
+  <div><span class="lab s0">S0</span>Tom frowns at a desk, raises his fist, and grabs for a hammer in the drawer.</div>
+  <div><span class="lab a1">A1</span>He pulls the drawer open and a live snake suddenly springs up from inside.</div>
+  <div><span class="lab s1">S1</span>He jumps back with wide eyes, stumbling away and shielding himself from the drawer.</div>
+ </div>
+ <h4>「只看最后结果」这把尺子 —— 两项<b>全过</b></h4>
+ <div class="ck ok"><div class="ckh"><span class="ckb">✓ 过</span><span class="mono tiny">event_completes</span></div><div class="cke">The snake fully emerges from the drawer as it springs up.</div><div class="ckz">蛇从抽屉里弹了出来，完整地出现了。</div></div> <div class="ck ok"><div class="ckh"><span class="ckb">✓ 过</span><span class="mono tiny">resulting_action_shown</span></div><div class="cke">He jumps back with wide eyes, stumbles, and shields himself with his hands.</div><div class="ckz">他瞪大眼睛往后跳、踉跄后退，用双手护住自己。</div></div>
+ <h4>「时序」这把尺子 —— 挂在这</h4>
+ <div class="ck ok"><div class="ckh"><span class="ckb">✓ 过</span><span class="mono tiny">event_integrated_in_order</span></div><div class="cke">The snake springs up exactly after the drawer is opened and before the man jumps back.</div><div class="ckz">蛇恰好是在抽屉被拉开<b>之后</b>、在他往后跳<b>之前</b>弹出来的。</div></div> <div class="ck no"><div class="ckh"><span class="ckb">✗ 挂</span><span class="mono tiny">full_action_trajectory</span></div><div class="cke">The opening action is incomplete as the fist raise and hammer are missing.</div><div class="ckz">开头那段动作不完整 —— <b>举拳头和拿锤子都缺了</b>。</div></div>
+ <h4>独立判官 strict-V2 的三段时间轴</h4>
+ <div class="tl"><div class="tlrow"><span class="tlp">前</span><span class="tle">A man in a blue shirt stands next to a wooden desk with an angry, frowning facial expression, looking down at the desk.</span><div class="tlz">一个穿蓝衬衫的男子站在木桌旁，皱着眉、表情愤怒地看着桌子。</div></div><div class="tlrow"><span class="tlp">事件</span><span class="tle">The man reaches out, pulls open the desk drawer, and a green snake suddenly pops up from inside the drawer.</span><div class="tlz">他伸手拉开抽屉，一条绿色的蛇突然从抽屉里弹了出来。</div></div><div class="tlrow"><span class="tlp">后</span><span class="tle">The man jumps back with wide eyes and an open mouth, stumbling backward with his hands raised in a defensive/startled posture.</span><div class="tlz">他瞪大眼、张着嘴往后跳，踉跄后退，双手抬起摆出防御/受惊的姿势。</div></div></div>
+ <div class="s2">提前泄露旗 = <b>否</b> ｜ causal_order = <b>2</b>（0–2 档）</div>
+ <h4>独立判官给出的反证</h4>
+ <ul class="ctr"><li>There is no hammer visible in the drawer or anywhere in the scene.<div class="cz">抽屉里、乃至整个画面里都看不到锤子。</div></li><li>The character does not raise his fist or attempt to attack in the S0 phase; he simply reaches for and opens the drawer.<div class="cz">S0 阶段他并没有举起拳头或试图攻击，只是伸手去开抽屉。</div></li></ul>
+ <h4>人工（严格题面，一位评测人）</h4>
+ <table class="rep"><tr><td>起点情绪</td><td>起点意图</td><td>终点情绪</td><td>终点意图</td><td>情绪变化</td><td>意图变化</td><td>因果顺序</td><td>无提前泄露</td></tr><tr><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">1</td><td class="num">2</td></tr></table>
+ <!-- 第一行是列名（CSS 把 tr:first-child 当表头），第二行才是分数 -->
+ <p class="lg">列名：起点情绪 <span class='mono tiny'>s0_emotion</span> · 起点意图 <span class='mono tiny'>s0_intent</span> · 终点情绪 <span class='mono tiny'>s1_emotion</span> · 终点意图 <span class='mono tiny'>s1_intent</span> · 情绪变化 <span class='mono tiny'>emotion_shift</span> · 意图变化 <span class='mono tiny'>intent_shift</span> · 因果顺序 <span class='mono tiny'>causal_order</span> · 无提前泄露 <span class='mono tiny'>no_leak</span></p>
+</div>
+
+<h2>七 · 口径与限定</h2>
+<ul>
+<li><b>「只看最后结果」是本页构造的对照物</b>，取值
+ <span class="mono">event_completes ∧ resulting_action_shown</span>。
+ 我们并没有真跑过这样一个评测器 —— 它是一次反事实，用来说明「如果只看结局会怎样」，
+ 不是一个我们已经量过的基线。</li>
+<li><b>8 / 168 = 4.8%</b>，不是一个大比例。本页主张的不是
+ 「这类问题很普遍」，而是<b>这类问题对「只看结果」从原理上不可见</b>：
+ 在这 8 支上，那把尺子完全失明。</li>
+<li><b>人工是一位评测人</b>按严格题面重评的结果
+ （<span class="mono">human_social_rerate</span>，逐支视频一条），不是多人一致率；
+ 所以它在本页里是「一条独立证据」，不等于「人类共识」。</li>
+<li><b>基率提醒。</b>全部 168 支里，人工把「因果顺序」打成 0 的有 41 支
+（24%）、把「无提前泄露」打成 0 的有 34 支（20%）、
+ strict-V2 亮泄露旗的有 10%。所以「有人给 0」本身并不稀奇。
+ 本页的证据是那个<b>特定形状</b>：这 8 支上终点项纹丝不动、起点与顺序项一起
+ 塌下去，且三个来源同时指认 —— 这个组合不是高基率能解释的。</li>
+<li><b>我没有逐支看过这些视频。</b>页面上所有判断都来自判官的原句与人工评分；
+ 卡片里内嵌视频正是为了让人能自己核。</li>
+<li>strict-V2 的 <span class="mono">independent_timeline</span> 里那个
+ <span class="mono">start_sec/end_sec</span> 字段<b>各条记录不同源</b>（有的真秒数、
+ 有的是把 00:02 拍平成的 0.02），所以本页不印它 —— 时间点一律用判官散文里的
+「At 00:01」，那才是它判「提前泄露」时真正引用的东西。</li>
+<li>案例视频已随本页一起发布（压缩版 1280×720 / CRF 26，3 支共 2.9 MB），<b>点开即可播放，不需要在本机</b>；原始未压缩版只在评测机上。</li>
+</ul>
+
+</div>
+<button id="themeBtn">◐ 明/暗</button>
+<script>
+(function(){var b=document.getElementById('themeBtn'),k='fsv-theme';
+ var s=localStorage.getItem(k);
+ if(s)document.documentElement.setAttribute('data-theme',s);
+ b.onclick=function(){var d=document.documentElement.getAttribute('data-theme')==='dark'?'':'dark';
+  if(d)document.documentElement.setAttribute('data-theme',d);
+  else document.documentElement.removeAttribute('data-theme');
+  localStorage.setItem(k,d);};})();
+</script>
+</body></html>
